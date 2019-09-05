@@ -1,0 +1,110 @@
+命令chmod +x filename 表示给该脚本加上可执行权限
+执行脚本的三种方式：
+	1：在该文件所在目录下打开终端，输入bash filename
+	2：chmod +x filename给脚本加上可执行权限，再输入./filename
+	3：将脚本复制到任一系统PATH变量所包含的目录下，同时赋予可执行	权限。如
+		chmod +x filename   
+		sudo mv filename /bin/  
+		filename
+cat命令
+	1、cat filename 打印出文件内容，cat -n filename 打印文件内容和行号
+	  tac正好相反，反向打印出文件内容
+	2、cat > filename新建一个文件，按Ctrl+D退出文件编辑
+
+
+vim使用技巧
+	1、按i键进入编辑模式，esc键进入一般模式
+	2、光标移动到某行，按yy复制该行，nyy复制光标所在n行，按p粘贴
+	3、按dd键删除该行，dw删除一个词语，也可按x向后删除一个字母，X向前删除一个字母
+	4、按u撤销操作，按Ctrl+r撤销上一步
+	5、h光标左移，l光标右移，j光标下移，k光标上移
+	6、$移动到本行末尾，G移动到文末
+	7、：n移动到第n行，n往下移动n行
+	8、ndd删除光标在内n行
+	9、d$删除光标到最后所有文本
+	10、o在当前光标的下一行插入新行并开始编辑，O当前光标的上一行插入新行病开始编辑
+	11、查找操作  /keyword    往下查找关键字，？keyword  往上查找关键字，N和n表示往上和往下查看
+	12、替换操作
+		：n1,n2s/word1/word2/g     替换n1到n2行
+		：1，$s/word1/word2/g       替换第一行到最后一行
+		：s/word1/word2/g          替换本行
+		: s/word1/word2            替换本行第一次出现位置
+	13、：set nu     显示行号
+	14、保存
+		:wq		保存并退出
+		:q!		退出不保存
+
+
+shell编程基础
+	变量：FUNCNAME
+		说明：在函数体内部，记录当前函数体的函数名，如echo $FUNCNAME 即可打印函数名
+	变量：HISTCMD
+		说明：记录下一条命令在history中的编号，命令history打印执行过的命令
+	变量：HISTFILE
+		说明：记录history命令记录文件的位置
+	变量：HISTFILESIZE
+		说明：记录HISTFILE文件的行数
+	变量：HOSTNAME
+		说明：主机名
+	变量：HOSTTYPE
+		说明：主机架构
+	变量：MACHTYPE
+		说明：主机类型GNU标识
+	变量：LANG
+		说明：当前系统语言环境，也就是langauage
+		设置语言
+		export LANG=zh_CN.UTF-8
+	变量：PWD
+		说明：记录当前目录
+	变量：OLDPWD
+		说明：记录之前目录
+	变量：PATH
+		说明：代表命令的搜索路径
+		新增/some/path到原来的PATH中，用
+		export PATH=/some/path:$PATH
+	变量取消
+		unset 变量名/函数名
+
+使用sort对文件内容排序
+	sort [-rntk] filename
+	sort filename 每一行第一个字符排序
+	sort -r filename 每一行第一个字符反向排序
+	sort -n filename 采用数字排序
+	sort -t filename 指定分隔符
+	sort -k filename 指定第几列
+	上面所有命令均可用管道输出,如   cat filename | sort -r
+
+使用uniq删除重复内容
+	uniq只能比较相邻的行，所以一般与sort联合使用
+	cat uniq.txt | sort | uniq (如果加上参数-c就能打印出该行重复的次数)
+
+使用tr做文本替换或者删除
+	删除 tr -d 'char'
+	替换 tr -d 'char1' 'char2'
+	改变大小写 tr '[a-z]' '[A-Z]'
+
+使用paste做文本合并
+	paste file1 file2
+
+压缩解压文件
+	压缩单个文件 gzip file
+	解压单个文件 gunzip file
+	压缩文件夹 tar -zcvf file.tfz /lication
+	解压文件夹到当前目录 tar -zxvf file.tgz
+	解压文件夹到其他目录 tar -zxvf file.tgz -C /location
+
+特殊字符
+	通配符*、？、[]
+	a* 可以匹配任意a开头的字符串，但不包括“."和"\"。
+	(?)可以匹配任意一个单字符
+	[abc]可以匹配a,b,c中任意一个，[a-z]”-“表示起止，*和?在[]中变成普通字符
+	
+shell组合键
+	Ctrl+B 退格但不删除前面字符
+	Ctrl+H 退格且删除前面字符
+	Ctrl+L 清屏
+	Ctrl+M 回车
+	Ctrl+U 删除光标至行首
+	Ctrl+D 结束符
+	Ctrl+G 系统一声鸣叫
+	Ctrl+Z 暂停前台作业
