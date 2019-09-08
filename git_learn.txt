@@ -1,0 +1,13 @@
+git status  查看当前仓库状态
+git diff filename  查看文件filename发生了什么变化
+git log 查看提交历史
+git reflog 查看命令历史
+git reset --hard HEAD^  回退到上一个版本
+git reset --hard 版本号
+丢弃工作区修改 git checkout --file
+丢弃暂存区修改 git reset HEAD file
+git rm file   删除文件,删除之后要提交哦
+git remote add origin git@github.com:yangxudongll/learngit.git 添加远>程仓库
+git push -u origin master   推送本地内容到远程仓库
+git push
+git pull 拉取远程分支并与本地master合并
