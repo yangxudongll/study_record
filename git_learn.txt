@@ -11,3 +11,10 @@ git remote add origin git@github.com:yangxudongll/learngit.git 添加远>程仓�
 git push -u origin master   推送本地内容到远程仓库
 git push
 git pull 拉取远程分支并与本地master合并
+git fetch 下载远程分支到本地
+git branch       查看分支
+git branch <name>     创建分支
+git checkout <name>或git switch <name> 切换分支
+git checkout -b <name> 或 git switch -c <name>  创建并切换分支
+git merge <name>    合并分支
+git branch -d <name>    删除分支
