@@ -1,0 +1,148 @@
+﻿1、WSAStartup(WORD wVersion,LPWSDATA lpWSAdata)
+	wVersion是一个16位的版本号，一般直接指定为0X0101
+	lpWSAdata是一个指向WSAData的指针，该指针直接声明后使用即可，如WSAData wsaData;
+	如果初始化成功返回0
+	示例：
+		WSADATA  wsaData;
+		int nRc = WSAStartup(0x0101, & wsaData);		
+		if(nRc)
+		{
+		//Winsock初始化错误
+		return;
+		}
+		if(wsaData.wVersion != 0x0101)
+		{
+		//版本支持不够
+		//报告错误给用户，清除Winsock，返回
+		WSACleanup();
+		return;
+		}
+2、SOCKET socket(int af,int type,int protocol)
+	af
+		地址族，一般填AF_INET
+	type
+		指定SOCKET类型，SOCK_STREAM流类型，SOCK_DGRAM数据报
+	ptotocol
+		根据af参数所指定的地址族所使用的一个具体协议。建议设为0，它就会自动选择。
+		另外两个常用值为INPROTO_UDP,IPPROTO_TCP
+	返回值
+		成功返回一个新的SOCKET，失败返回INVALID_SOCKET
+	功能
+		所有通信建立之前都要建立一个SOCKET
+	示例
+		//创建数据报socket
+		SCOKET udpSock = socket(AF_INET, 
+		SOCK_DGRAM, IPPROTO_UDP);
+		//创建流socket
+		SCOKET tcpSock = socket(AF_INET, 
+		SOCK_STREAM, IPPROTO_TCP);
+
+3、int bind(SOCKET s,const struct sockaddr FAR*name,int namelen)
+	s
+		需要绑定的SOCKET
+	name
+		指向描述通信对象地址信息的结构体sockaddr的指针,不过一般是sockaddr_in
+	namelen
+		name指针指向结构体的长度
+	示例
+		SOCKET sServSock;
+		sockaddr_in addr;
+
+		//创建socket
+		sServSock = socket(AF_INET, SOCK_STREAM, 0);
+
+		addr.sin_family = AF_INET;
+
+		//htons和htonl函数把主机字节顺序转换为网络字节顺序，分别用于//短整型和长整型数据
+		addr.sin_port = htons(5050);	
+		addr.sin_addr.S_un.S_addr = htonl(INADDR_ANY); 
+
+		// LPSOCKADDR类型转换是必须的
+		int nRc = bind(sServSock, (LPSOCKADDR)&addr, sizeof(addr) ); 
+
+4、地址信息结构体sockaddr_in
+	struct sockaddr_in {
+		short 			sin_family;     //地址族,一般为AF_INET
+		u_short			sin_port;       //端口号，设为0，Winsock会自动分配
+		struct  in_addr	sin_addr;       //IP地址
+		char 			sin_zero[8];    //8字节的数组，值全为0。这个8个字节用来填充结构sockaddr_in，使其大小等于结构sockaddr（16字节）。
+	};
+5、IP信息结构体
+	struct in_addr {
+		union {
+		           struct { u_char s_b1,s_b2,s_b3,s_b4; } S_un_b;
+		           struct { u_short s_w1,s_w2; } S_un_w;
+		           u_long S_addr;
+		} S_un;
+	};
+	对于IP地址10.14.25.90，sockaddr_in结构中的sin_addr可以这样赋值：
+	sin_addr. S_un .S_un_b. s_b1 = 10;
+	sin_addr. S_un .S_un_b. s_b2 = 14;
+	sin_addr. S_un .S_un_b. s_b3 = 25;
+	sin_addr. S_un .S_un_b. s_b4 = 90;
+	或者
+	sin_addr. S_un . S_un_w. s_w1 = (14<<8)|10;
+	sin_addr. S_un . S_un_w. s_w2 = (90<<8)|25;
+	或者
+	sin_addr. S_un . S_addr = (90<<24)|(25<<16)|(14<<8)|10;
+	或者
+	sin_addr. S_un . S_addr = inet_addr(“10.14.25.90”);
+	这里的inet_addr函数可以将字符串形式的IP地址转换为unsigned long形式的值。
+
+6、int listen(SOCKET S,int backlog)
+	s
+		一个已经绑定未连接的SOCKET
+	backlog
+		[in] 等待连接的队列的长度，可取SOMAXCONN。如果某个客户程序要求连接的时候，服务器已经与其他客户程序连接，则后来的连接请求会放在等待队列中，等待服务器空闲时再与之连接。当等待队列达到最大长度（backlog指定的值）时，再来的连接请求都将被拒绝。
+	示例
+		nRC = listen(srvSock, MAXCONN);
+
+7、SOCKET accept (SOCKET s, struct sockaddr FAR* addr, int FAR* addrlen );
+	s
+		[in] 一个已经处于listen状态的SOCKET。
+	addr
+		[out] 指向sockaddr结构体的指针，里面包含了客户端的地址和端口。
+	addrlen
+		[out] int型指针，指向的内容为addr指针指向的结构体的长度。
+
+8、int connect (SOCKET s, const struct sockaddr FAR* name,int  namelen );
+	参数同bind()函数，此函数用于客户端
+
+9、int send (SOCKET s, char * buf, int len ,int flags);
+	s
+		一个已经连接的socket
+	buf
+		要发送的字符
+	flags
+		buf的长度
+
+10、int recv (SOCKET s, char * buf, int len ,int flags);
+	s
+		一个已经连接的socket
+	buf
+		接收数据的缓冲区
+	flags
+		指定函数的调用方式，一般取0
+
+11、int sendto (SOCKET s, char * buf, int len ,int flags, struct sockaddr_in * to, int tolen);
+	s
+		一个可能已经连接的socket
+	buf
+		要传输的数据缓冲区指针
+	len
+		buf长度
+	flags
+		指定函数的调用方式，一般取0
+	to
+		指向目标地址结构体的指针。
+	tolen
+		目标地址结构体的指针
+	返回值
+		函数执行成功返回发送的字节数（可能小于len），失败则返回SOCKET_ERROR。这时可以调用WSAGetLastError函数取得具体的错误代码。
+12、int recvfrom (SOCKET s, char * buf, int len ,int flags, struct sockaddr_in * from, int * fromlen);
+	参数和上面相同
+	S是已经绑定的socket
+
+13、int closesocket (SOCKET s);
+	返回值
+		函数执行成功返回0，失败则返回SOCKET_ERROR。这时可以调用WSAGetLastError函数取得具体的错误代码。

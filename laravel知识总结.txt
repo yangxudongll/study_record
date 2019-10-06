@@ -1,0 +1,264 @@
+对于不存在的请求，可以自定义404页面
+	在views下新建一个errors文件夹，在errors里面新建一个404.blade.php文件，编写需要显示的内容。
+	在web.php中编写路由
+			Route::get('/',function(){
+		    abort(404);
+			});
+
+
+中间件创建
+	命令行切换到laravel目录下，输入
+	php artisan make:middleware name
+	(name随意)，自动生成
+
+	编写规则
+
+	注册，分全局注册和局部注册,kernel.php中注册
+
+	如果是局部中间件，需要在路径中引入，两种方法
+	Route::get('/setting',[
+	'middleware'=>'login',
+	'uses'=>function(){
+		echo "这里是设置";
+	}
+	]);
+	Route::get('/admin',function(){
+		echo "这是后台页面";
+	})->middleware('login');
+
+laravel 中文社区
+	laravel-china.org
+
+函数file_put_contents('request.log',$str,FILE_APPEND);
+	将字符串$str写入文件request.log中，FILE_APPEND指写入文件末尾，如果不写这个参数则删除文件内容重新写
+	
+控制器使用
+	1、创建
+		php artisan make:controller testController
+		php artisan make:controller testController --plain    似乎不行
+	2、路由及访问
+		Route::get('/controller','testController@show');
+		当访问/controller时，会自动调用控制器testController下的show方法
+
+419错误
+	尝试了许多，比如添加
+	<meta name="csrf-token" content="{{ csrf_token() }}">
+	<input type="hidden" name="_token" value="{{csrf_token()}}">
+	@csrf
+	全都不行
+	在中间件VerifyCsrfToken里添加路由白名单可行
+	    protected $except = [
+        "/signIn"
+    ];
+
+ 写入cookie
+ 	\Cookie::queue('name','xid',20);
+ 	前面的\不能掉，20分钟
+
+
+ 响应
+ 	1、返回json字符串
+ 		return response()->json(['a'=>100,'b'=>300,'name'=>'杨旭东']);
+ 	2、文件下载
+ 		return response()->download('./images/404.jpg');
+ 		注意使用相对路径和绝对路径
+ 	3、网页跳转
+ 		return redirect('http://www.baidu.com');
+ 	4、模板解析
+ 		return view('welcome');
+ 	5、设置响应头
+       return response('')->head('name','旭东');
+
+视图
+	1、层级关系
+		默认模板都是保存在views文件夹下面，可以在views文件夹下面新建一个文件夹，然后通过'.'进行层级访问。比如 新建user文件夹，访问user中的index.blade.php 
+		return view('user.index')
+	2、数据分配
+		通过关联数组的方式，将变量的值传递给模板
+		$xdl=['name'=>'xudong','age'=>23,'position'=>'武汉武昌'];
+        return view('user.xinxi',['xdl'=>$xdl]);    //注意，此处是通过数组传递哦
+        在视图模板中就可以访问这些变量了
+        {{$xdl['name']}}
+模板
+	1、变量使用
+		见视图中的数据分配
+	2、函数使用
+		时间戳   {{time()}}
+		格式化日期    {{date('Y-m-d H:i:s')}}
+	3、字符串截取    {{mb_substr($str,0,4)}}      //第二个参数是起始位置，最后一个是要截取的长度
+	4、代码显示
+		通过参数传递给模板一段html代码，然后在模板中用
+		{!!$page!!}解析，注意格式    
+	5、模板引入
+		分别把某个页面的首部或者尾部保存在不同的模板中，通过
+		@include('user.header')
+		引入，参数是路径
+	6、模板继承
+		首部用@extends('layout.index')   参数是路径
+	7、循环控制
+		@if()
+		@elseif
+		@endif
+
+		@foreach()
+		@endforeach
+
+8、数据库操作
+	数据库配置
+		在config/database.php中增加或修改数据库信息
+		也可在.env文件中修改
+		DB_CONNECTION=mysql
+		DB_HOST=127.0.0.1
+		DB_PORT=3306
+		DB_DATABASE=laravel      //此处容易出错，原来默认是laravel,但这个数据库是不存在的，改为mysql或者其他的
+		DB_USERNAME=root
+		DB_PASSWORD=
+	基本操作
+		查询 
+			$res=DB::select("select * from student");
+			$res=DB::select("select * from student where id=?",[20]);
+			上面的？是占位符，会自动引入后面的20
+			直接var_dump()没有格式不好看，通过
+			echo '<pre>';格式化输出
+		插入
+			DB::insert("insert into student values ('U201714803','罗梅','女',20)");
+			用占位符插入
+			DB::insert("insert into student values (？，？，？，？)"，['U201714803','罗梅','女',20]);
+		更新
+			DB::update("update student set age=19 where age>20");
+		删除
+			DB::delete("delete student where age>?",[21]);
+		一般的添加表删除表等语句用
+			DB::statement();
+	连贯事务操作（比如需要同时做的事情）
+		        //开启事务
+        DB::beginTransaction();
+
+        $res1=DB::insert("insert into family values ('吴昌琴',46,'母亲','浙江','农民工');");
+        $res2=DB::insert("insert into family values ('杨旭东',23,'本人','武汉武昌','华中科技大学');");
+        $res3=DB::insert("insert into family values ('杨涟',22,'妹妹','贵阳','贵州中医药大学');");
+        $res4=DB::insert("insert into family values ('杨闽贵',18,'弟弟','毕节','毕节市第一中学');");
+
+        if($res1 && $res2 && $res3 && $res4)
+        {
+            //事务提交
+            DB::commit();
+            echo '插入成功';
+        }
+        else
+        {
+            //取消事务
+            DB::rollback();
+            echo "插入失败";
+        }
+
+构造器
+	插入
+		     DB::table('student')->insert([
+            'schnum'=>'U201714804',
+            'names'=>'汤悦',
+            'sex'=>'女',
+            'age'=>22
+        ]);
+    	通过传入二维数组同时插入多条数据
+    	    DB::table('student')->insert([[],[],[]]);
+    	插入并获取ID
+    		$res=DB::table('student')->insertGetId();
+    	更新数据
+    		DB::table('student')->where('age','=',19)->update(['age'=>20]);
+    		注意：where中，每个键值分开写，update中传递参数用数组
+    	查询数据
+    		查询多条
+        	$res=DB::table('student')->get();
+        	查询单条
+        	DB::table('student')->first();
+        	获取单条的某个值
+        	$res=DB::table('student')->value('schnum');
+        	获取一列数据
+        	DB::table('student')->lists('names');
+        	设置字段查询
+        	$res=DB::table('student')->select('names','schnum')->get();
+        	where查询
+        	DB::table('student')->where('age','=',20)->orwhere('age','<',22)->get();
+        	还有whereBetween('age',[19,22]),whereIn('age',[19,20,21])等
+        	排序
+        		orderBy()
+        	分页操作
+        		DB::table('student')->skip(5)->take(4)->get();
+        	运算操做
+        		DB::table('student')->count();
+        		DB::table('student')->max('age');
+        		DB::table('student')->avg('age');
+        		...
+        		也可加上where条件选择
+        	
+
+
+
+
+配置虚拟主机
+1、在apache下的httpd.conf中找到
+	Include conf/extra/httpd-vhosts.conf
+	将前面的#删除
+2、在文件http-vhost.conf文件末尾添加
+	<VirtualHost *:80>
+    ServerAdmin webmaster@dummy-host2.example.com
+    DocumentRoot "C:/laragon/www/blog/public"
+    ServerName blog.test
+    ErrorLog "logs/dummy-host2.example.com-error.log"
+    CustomLog "logs/dummy-host2.example.com-access.log" common
+	</VirtualHost>
+	其中DocumentRoot 和ServerName自行设置
+3、在C:\Windows\System32\drivers\etc下打开hosts文件，末尾添加
+	127.0.0.1           blog.test
+	其中blog.test与ServerName保持一致
+	需要注意的是hosts文件你没有写权限，需要自己在文件属性里添加
+4、重启apache
+
+
+数据库迁移
+	1、首先创建好迁移文件，命令行输入
+		php artisan make:migration test
+		test是迁移文件的名字
+	2、在database文件夹下找到创建好的迁移文件
+		创建表(第一个参数是要创建的表名)，在up()方法中
+			schema::create('test',function(BluePrint $table){
+				//创建主键
+				$table->increments('id');
+				//创建用户名字段
+				$table->string('username')->nullable()->default('abc')->comment('用户名');
+				//创建密码字段
+				$table->char('password',100);
+
+			});
+
+
+			删除表，放在down()方法中
+				Schema::drop('test');
+
+			刷新表
+				php artisan migrate:refresh
+			检查表是否存在
+				Schema::hasTable('test')
+			检查列是否存在
+            	if(!Schema::hasColumn('test','school'))  第一个参数是表名，第二个是列名
+
+		在命令行输入pip artisan migration就可以执行上面命令了
+
+
+数据填充
+	1、命令行运行 php artisan make:seender testname
+	2、在database/seed中找到创建的文件,在run函数中填充代码
+		for($i=0;$i<20;$i++)
+        {
+        	$tem=[]
+        	$tem['schnum']=str_random(10);
+        	$tem['names']=str_random(10);
+        	$tem['sex']=rand(0,1);
+        	$tem['age']=rand(19,23);
+        	//压入到数组中
+        	$arr[]=$tem;
+        }
+        DB::table('student')->insert($arr);
+    3、运行指令
+    	php artisan db:seed --class=test
