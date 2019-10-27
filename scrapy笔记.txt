@@ -1,3 +1,9 @@
+scrapy建立步骤
+	1.scrapy startproject name
+	2.scrapy genspider name url (非必须)
+	3.scrapy crawl name (-o filename输出到文件)
+
+
 Item对象是一个简单的容器，用于收集抓取到的数据
 	1、在items.py中定义类，如
 		class QidianHotItem(scrapy.Item):
@@ -29,7 +35,7 @@ Item对象是一个简单的容器，用于收集抓取到的数据
     	.add_xpath()    #使用xpath选择器提取数据
     	.add_css() 
     	.add_value()    #直接传值，比如.add_value("type","连载")
-进一步处理数据
+进一步处理数据,在item.py中实现
 	使用输入处理器和输出处理器对数据的输入和输出进一步解析
 	from scrapy.loader.processors import TakeFirst
 
@@ -45,16 +51,18 @@ Item对象是一个简单的容器，用于收集抓取到的数据
 	    author=scrapy.Field(output_processor=TakeFirst())
 
 	    type=scrapy.Field(output_processor=TakeFirst())
-
+	   #注意,这里修改数据的格式,处理函数是在这个类外面实现的
 	    form=scrapy.Field(input_processor=form_convert,output_processor=TakeFirst())
 
   	函数TakeFirst()为scrapy的内置函数，用于获取集合中的第一个非空值
+
+  	上面的功能也可放在pipeline.py中实现
 
 
 命令行创建spider文件和spider类
 	在项目目录下输入 scrapy genspider name https://su.lianjia.com/ershoufang/
 	其中name为爬虫名称，https://su.lianjia.com/ershoufang/  为初始访问url
-
+user-agent
 'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36'
 
 设置请求时延
@@ -100,7 +108,7 @@ Item对象是一个简单的容器，用于收集抓取到的数据
     		def process_request(self, request, spider):
         		agent=random.choice(list(MY_USER_AGENT))
        			request.headers.setdefault('User-Agent',agent)
-       要现在头部导入
+       要先在头部导入
        	from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
 		import random
 		from shetu_download.settings import MY_USER_AGENT
@@ -214,6 +222,7 @@ Item对象是一个简单的容器，用于收集抓取到的数据
 		        #提交数据
 		        self.db_conn.commit()
 		        #关闭游标
+		        #如果不想提交,用self.db_conn.rollback()回滚操作
 		        self.db_cursor.close()
 		        #关闭数据库
 		        self.db_conn.close()
@@ -221,3 +230,40 @@ Item对象是一个简单的容器，用于收集抓取到的数据
 		ITEM_PIPELINES = {
 		    'xici_proxy.pipelines.MySQLPipeline':400,
 		}
+
+注意到了吗?在pipeline中的每个类的三个函数都是
+	def open_spider(self,spider)
+	def process_item(self,item,spider)
+	def close_spider(self,spider)
+
+
+Request()函数的参数
+	url  请求网址
+	header         #如果在settings.py中有设置这里就没必要了
+	callback  回调函数
+	method  请求方法   GET  POST  PUT
+	body    HTTP请求体  str/unicode
+	cookies
+	encoding
+	meta  字典类型,用于数据传递
+	priority  优先级  默认为0
+	dont_filter    忽略重复请求,默认False
+	errback    异常时调用的函数
+
+
+selenium 使用
+	Chrome
+
+        chromedriver 下载: http://chromedriver.storage.googleapis.com/index.html
+
+        安装
+
+	$ unzip chromedriver_linux64.zip
+
+	$ sudo mv chromedriver /usr/bin/
+
+	$ cd /usr/bin/
+
+	$ sudo chmod +x chromedriver
+
+

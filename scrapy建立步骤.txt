@@ -1,3 +1,0 @@
-1、scrapy startproject name
-2、scrapy genspider name url
-3、运行scrapy crawl name
